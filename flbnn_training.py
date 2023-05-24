@@ -1,32 +1,27 @@
 import glob
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import pickle
-import tensorflow as tf
 from keras.utils.vis_utils import plot_model
-from models import HBNN
+from models import FLBNN
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from tensorflow import keras
 from util import dataset, plot_training, save_results
-# TODO can we remove imports?
 
 
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-    wins = [144]
+    wins = [144]  # TODO what is wins?
     hs = [2]
-    resources = ['cpu', 'mem']
-    clusters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    # resources = ['cpu', 'mem']
+    # clusters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    resources = ['cpu']
+    clusters = ['a']
 
     for win in wins:
         for res in resources:
             for h in hs:
                 for c in clusters:
-
-                    # TODO why you don't use these values?
-                    mses, maes = [], []
+                    mses, maes = [], []  # TODO to remove
                     experiment_name = 'HBNN-' + res + '-' + c + '-w' + str(win) + '-h' + str(h)
 
                     # Data creation and load
@@ -34,10 +29,11 @@ def main():
                                          resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
-                    parameters = pd.read_csv("hyperparams/p_hbnn-" + c + ".csv").iloc[0]
+                    parameters = pd.read_csv("hyperparams/p_flbnn-" + c + ".csv").iloc[0]
 
+                    # TODO why this is always cpu??
                     files = sorted(
-                        glob.glob("saved_models/talos-HBNN-" + c + "-cpu-w" + str(win) + "-h" + str(h) + "*_weights.tf.i*"))
+                        glob.glob("saved_models/talos-FLBNN-" + c + "-cpu-w" + str(win) + "-h" + str(h) + "*_weights.tf.i*"))
 
                     dense_act = 'relu'
                     if 'relu' in parameters['first_dense_activation']:
@@ -46,9 +42,9 @@ def main():
                         dense_act = 'tanh'
 
                     p = {'first_conv_dim': parameters['first_conv_dim'],
-                         'first_conv_activation': parameters['first_conv_activation'],
                          'first_conv_kernel': (parameters['first_conv_kernel'],),
-                         'second_lstm_dim': parameters['second_lstm_dim'],
+                         'first_conv_activation': parameters['first_conv_activation'],
+                         'first_lstm_dim': parameters['second_lstm_dim'],
                          'first_dense_dim': parameters['first_dense_dim'],
                          'first_dense_activation': dense_act,
                          'batch_size': parameters['batch_size'],
@@ -63,26 +59,34 @@ def main():
                          }
 
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
-                    model = HBNN.HBNNPredictor()
+                    model = FLBNN.FLBNNPredictor()
                     model.name = experiment_name
+                    train_model = None
+                    prediction_mean = None
+                    prediction_std = None
 
                     if len(files):
                         for i in range(len(files)):
                             path_weight = files[-(i + 1)][:-6]
                             p['weight_file'] = path_weight
+                            # TODO dont like this try except
                             try:
                                 train_model, prediction_mean, prediction_std = model.load_and_predict(ds.X_train,
                                                                                                       ds.y_train,
                                                                                                       ds.X_test,
-                                                                                                      ds.y_test, p)
+                                                                                                      ds.y_test,
+                                                                                                      p)
                             except:
-                                train_model, prediction_mean, prediction_std = model.training(ds.X_train, ds.y_train,
+                                train_model, prediction_mean, prediction_std = model.training(ds.X_train,
+                                                                                              ds.y_train,
                                                                                               ds.X_test,
                                                                                               ds.y_test, p)
                     else:
-                        train_model, prediction_mean, prediction_std = model.training(ds.X_train, ds.y_train,
+                        train_model, prediction_mean, prediction_std = model.training(ds.X_train,
+                                                                                      ds.y_train,
                                                                                       ds.X_test,
-                                                                                      ds.y_test, p)
+                                                                                      ds.y_test,
+                                                                                      p)
 
                     train_distribution = train_model(ds.X_train)
                     train_mean = np.concatenate(train_distribution.mean().numpy(), axis=0)

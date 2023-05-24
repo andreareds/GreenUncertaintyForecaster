@@ -30,19 +30,19 @@ class VarLayer(tfp.layers.DenseVariational):
         return super(VarLayer, self).call(inputs)
 
 
-class HBNNPredictor(ModelInterface):
+class FLBNNPredictor(ModelInterface):
     def __init__(self):
-        ModelInterface.__init__(self, "HBNNPredictor")
+        ModelInterface.__init__(self, "FLBNNPredictor")
         self.input_shape = None
         self.train_model = None
         self.model = None
+
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
                                'first_conv_kernel': [3, 5, 7, 11],
                                'first_conv_activation': ['relu', 'tanh'],
-                               'second_lstm_dim': [16, 32, 64],
+                               'first_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
                                'first_dense_activation': [keras.activations.relu, keras.activations.tanh],
-                               'dense_kernel_init': ['he_normal', 'glorot_uniform'],
                                'batch_size': [256, 512, 1024],
                                'epochs': [2000],
                                'patience': [50],
@@ -52,12 +52,12 @@ class HBNNPredictor(ModelInterface):
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
 
-    def compute_predictions(self, X_test):
-        prediction_distribution = self.model(X_test)
-        prediction_mean = prediction_distribution.mean().numpy().tolist()
-        prediction_stdv = prediction_distribution.stddev().numpy().tolist()
+    def compute_predictions(self, X_test, iterations=30):
+        prediction = []
+        for i in range(iterations):
+            prediction.append(self.model(X_test))
 
-        return prediction_mean, prediction_stdv
+        return np.mean(prediction), np.std(prediction)
 
     def training(self, X_train, y_train, X_test, y_test, p):
         training_start = datetime.now()
@@ -71,7 +71,7 @@ class HBNNPredictor(ModelInterface):
         return self.model, history, prediction_mean, prediction_std, training_time, inference_time
 
     def load_and_predict(self, X_train, y_train, X_test, y_test, p):
-        self.train_model = self.load_model(X_train, y_train, X_test, y_test, p)
+        self.train_model = self.load_model(X_train, p)
         self.model = self.train_model
 
         prediction_mean, prediction_std = self.compute_predictions(X_test)
@@ -82,8 +82,9 @@ class HBNNPredictor(ModelInterface):
         return self.model, prediction_mean, prediction_std
 
     def load_and_tune(self, X_train, y_train, X_test, y_test, p):
-        self.train_model = self.load_model(X_train, y_train, X_test, y_test, p)
+        self.train_model = self.load_model(X_train, p)
         self.model = self.train_model
+        opt = None
 
         if p['optimizer'] == 'adam':
             opt = Adam(learning_rate=p['lr'], decay=p['decay'])
@@ -125,8 +126,8 @@ class HBNNPredictor(ModelInterface):
 
         return self.model, history, tuning_time
 
-    def training_talos(self, X_train, y_train, X_test, y_test, p):
-        p = self.parameter_list
+    # TODO can we remove unused params?
+    def training_talos(self, X_train, y_train):
         tf.keras.backend.clear_session()
         self.input_shape = X_train.shape[1:]
 
@@ -134,26 +135,46 @@ class HBNNPredictor(ModelInterface):
                        y=y_train,
                        model=self.talos_model,
                        experiment_name=self.name,
-                       params=p,
+                       params=self.parameter_list,
                        clear_session=True,
                        print_params=True,
                        round_limit=500)
 
         return t, None, None
 
-    def load_model(self, X_train, y_train, x_val, y_val, p):
+    # TODO can we remove unused params?
+    def load_model(self, X_train, p):
+
         tf.keras.backend.clear_session()
         input_shape = X_train.shape[1:]
 
         input_tensor = Input(shape=input_shape)
 
-        x = Conv1D(filters=p['first_conv_dim'], kernel_size=p['first_conv_kernel'],
-                   strides=1, padding="causal",
-                   activation=p['first_conv_activation'],
-                   input_shape=input_shape)(input_tensor)
+        # Bayesian 1DCNN
+        x = tfp.experimental.nn.ConvolutionVariationalReparameterization(
+            input_size=input_shape,
+            output_size=p['first_conv_dim'],
+            filter_shape=p['first_conv_kernel'],
+            rank=1,
+            strides=1,
+            padding="causal",
+            dilations=1,
+            # make_posterior_fn=tfp.experimental.nn.util.make_kernel_bias_posterior_mvn_diag,  # self.posterior?
+            # make_prior_fn=tfp.experimental.nn.util.make_kernel_bias_prior_spike_and_slab,    # self.prior?
+            make_posterior_fn=self.posterior,
+            make_prior_fn=self.prior,
+            posterior_value_fn=tfp.distributions.Distribution.sample,
+            # unpack_weights_fn=unpack_kernel_and_bias,
+            activation_fn=p['first_conv_activation'],
+        )(input_tensor)
 
-        x = LSTM(p['second_lstm_dim'])(x)
+        # LSTM
+        x = LSTM(p['first_lstm_dim'])(x)
 
+        # # Dense (optional)
+        # x = layers.Dense(units=p['first_dense_dim'])(x)
+
+        # Bayesian
         x = tfp.layers.DenseVariational(name='var',
                                         units=p['first_dense_dim'],
                                         make_prior_fn=self.prior,
@@ -162,8 +183,8 @@ class HBNNPredictor(ModelInterface):
                                         activation=p['first_dense_activation'],
                                         )(x)
 
-        distribution_params = layers.Dense(units=2)(x)
-        outputs = tfp.layers.IndependentNormal(1)(distribution_params)
+        outputs = layers.Dense(units=1)(x)
+
         opt = None
         self.train_model = Model(inputs=input_tensor, outputs=outputs)
 
@@ -183,6 +204,7 @@ class HBNNPredictor(ModelInterface):
 
         return self.train_model
 
+    # TODO can we remove unused params?
     def talos_model(self, X_train, y_train, x_val, y_val, p):
         tf.keras.backend.clear_session()
         input_shape = X_train.shape[1:]
@@ -230,11 +252,11 @@ class HBNNPredictor(ModelInterface):
         return history, self.model
 
     @staticmethod
-    def negative_loglikelihood(self, targets, estimated_distribution):
+    def negative_loglikelihood(targets, estimated_distribution):
         return -estimated_distribution.log_prob(targets)
 
     @staticmethod
-    def prior(self, kernel_size, bias_size):
+    def prior(kernel_size, bias_size):
         n = kernel_size + bias_size
         prior_model = keras.Sequential(
             [
@@ -248,7 +270,7 @@ class HBNNPredictor(ModelInterface):
         return prior_model
 
     @staticmethod
-    def posterior(self, kernel_size, bias_size):
+    def posterior(kernel_size, bias_size):
         n = kernel_size + bias_size
         posterior_model = keras.Sequential(
             [
