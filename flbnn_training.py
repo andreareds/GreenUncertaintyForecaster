@@ -2,38 +2,31 @@ import glob
 import numpy as np
 import os
 import pandas as pd
+import argparse
 from keras.utils.vis_utils import plot_model
 from models import FLBNN
-from sklearn.metrics import mean_squared_error, mean_absolute_error
 from util import dataset, plot_training, save_results
 
 
-def main():
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-    wins = [144]  # TODO what is wins?
-    hs = [2]
-    # resources = ['cpu', 'mem']
-    # clusters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    resources = ['cpu']
-    clusters = ['a']
+def main(args):
+    wins = [eval(i) for i in args.windows.split("-")]
+    hs = [eval(i) for i in args.horizons.split("-")]
 
     for win in wins:
-        for res in resources:
+        for res in args.resources.split("-"):
             for h in hs:
-                for c in clusters:
-                    mses, maes = [], []  # TODO to remove
-                    experiment_name = 'HBNN-' + res + '-' + c + '-w' + str(win) + '-h' + str(h)
+                for c in args.clusters.split("-"):
+                    experiment_name = f"FLBNN-{res}-{c}-w{win}-h{h}"
 
                     # Data creation and load
-                    ds = dataset.Dataset(meta=False, filename='res_task_' + c + '.csv', winSize=win, horizon=h,
-                                         resource=res)
+                    ds = dataset.Dataset(meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h, resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
-                    parameters = pd.read_csv("hyperparams/p_flbnn-" + c + ".csv").iloc[0]
+                    parameters = pd.read_csv(f"hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
-                    # TODO why this is always cpu??
+                    # TODO careful not to swap c and res with respect to the name of experiment and hypers
                     files = sorted(
-                        glob.glob("saved_models/talos-FLBNN-" + c + "-cpu-w" + str(win) + "-h" + str(h) + "*_weights.tf.i*"))
+                        glob.glob(f"saved_models/talos-FLBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
 
                     dense_act = 'relu'
                     if 'relu' in parameters['first_dense_activation']:
@@ -77,16 +70,17 @@ def main():
                                                                                                       ds.y_test,
                                                                                                       p)
                             except:
-                                train_model, prediction_mean, prediction_std = model.training(ds.X_train,
-                                                                                              ds.y_train,
-                                                                                              ds.X_test,
-                                                                                              ds.y_test, p)
+                                train_model, _, prediction_mean, prediction_std, _, _ = model.training(ds.X_train,
+                                                                                                       ds.y_train,
+                                                                                                       ds.X_test,
+                                                                                                       ds.y_test,
+                                                                                                       p)
                     else:
-                        train_model, prediction_mean, prediction_std = model.training(ds.X_train,
-                                                                                      ds.y_train,
-                                                                                      ds.X_test,
-                                                                                      ds.y_test,
-                                                                                      p)
+                        train_model, _, prediction_mean, prediction_std, _, _ = model.training(ds.X_train,
+                                                                                               ds.y_train,
+                                                                                               ds.X_test,
+                                                                                               ds.y_test,
+                                                                                               p)
 
                     train_distribution = train_model(ds.X_train)
                     train_mean = np.concatenate(train_distribution.mean().numpy(), axis=0)
@@ -97,23 +91,43 @@ def main():
                                                       'avg' + res,
                                                       'train-' + model.name)
 
-                    # TODO why you don't use these values?
-                    mse = mean_squared_error(ds.y_test, prediction_mean)
-                    mae = mean_absolute_error(ds.y_test, prediction_mean)
-
-                    save_results.save_uncertainty_csv(prediction_mean, prediction_std,
+                    save_results.save_uncertainty_csv(np.concatenate(prediction_mean, axis=0),
+                                                      np.concatenate(prediction_std, axis=0),
                                                       np.concatenate(ds.y_test[:len(prediction_mean)], axis=0),
                                                       'avg' + res,
                                                       model.name)
 
-                    plot_training.plot_series_interval(np.arange(0, len(ds.y_test) - 1), ds.y_test, prediction_mean,
-                                                       prediction_std,
-                                                       label1="ground truth",
-                                                       label2="prediction", title=model.name)
-
-                    plot_model(train_model, to_file='img/models/model_plot_' + model.name + '.png', show_shapes=True,
-                               show_layer_names=True)
-
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--windows",
+        default=False,
+        type=str,
+        required=True,
+        help="The window sizes to use (provide integer numbers separated by dashes)."
+    )
+    parser.add_argument(
+        "--horizons",
+        default=False,
+        type=str,
+        required=True,
+        help="The horizons to use (provide integer numbers separated by dashes)."
+    )
+    parser.add_argument(
+        "--resources",
+        default=False,
+        type=str,
+        required=True,
+        help="The resources to use (provide names separated by dashes)."
+    )
+    parser.add_argument(
+        "--clusters",
+        default=None,
+        type=str,
+        required=True,
+        help="The horizons to use (provide names separated by dashes)."
+    )
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    main(parser.parse_args())

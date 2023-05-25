@@ -256,7 +256,7 @@ class FLBNNPredictor(ModelInterface):
         return -estimated_distribution.log_prob(targets)
 
     @staticmethod
-    def prior(kernel_size, bias_size):
+    def prior(kernel_size, bias_size, dtype=None):
         n = kernel_size + bias_size
         prior_model = keras.Sequential(
             [
@@ -270,7 +270,7 @@ class FLBNNPredictor(ModelInterface):
         return prior_model
 
     @staticmethod
-    def posterior(kernel_size, bias_size):
+    def posterior(kernel_size, bias_size, dtype=None):
         n = kernel_size + bias_size
         posterior_model = keras.Sequential(
             [

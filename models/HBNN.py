@@ -84,6 +84,7 @@ class HBNNPredictor(ModelInterface):
     def load_and_tune(self, X_train, y_train, X_test, y_test, p):
         self.train_model = self.load_model(X_train, y_train, X_test, y_test, p)
         self.model = self.train_model
+        opt = None
 
         if p['optimizer'] == 'adam':
             opt = Adam(learning_rate=p['lr'], decay=p['decay'])
@@ -230,11 +231,11 @@ class HBNNPredictor(ModelInterface):
         return history, self.model
 
     @staticmethod
-    def negative_loglikelihood(self, targets, estimated_distribution):
+    def negative_loglikelihood(targets, estimated_distribution):
         return -estimated_distribution.log_prob(targets)
 
     @staticmethod
-    def prior(self, kernel_size, bias_size):
+    def prior(kernel_size, bias_size, dtype=None):
         n = kernel_size + bias_size
         prior_model = keras.Sequential(
             [
@@ -248,7 +249,7 @@ class HBNNPredictor(ModelInterface):
         return prior_model
 
     @staticmethod
-    def posterior(self, kernel_size, bias_size):
+    def posterior(kernel_size, bias_size, dtype=None):
         n = kernel_size + bias_size
         posterior_model = keras.Sequential(
             [
