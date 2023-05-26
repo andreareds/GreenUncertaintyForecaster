@@ -3,9 +3,8 @@ import numpy as np
 import os
 import pandas as pd
 import argparse
-from keras.utils.vis_utils import plot_model
 from models import FLBNN
-from util import dataset, plot_training, save_results
+from util import dataset, save_results
 
 
 def main(args):
@@ -16,7 +15,7 @@ def main(args):
         for res in args.resources.split("-"):
             for h in hs:
                 for c in args.clusters.split("-"):
-                    experiment_name = f"FLBNN-{res}-{c}-w{win}-h{h}"
+                    experiment_name = f"FLBNN-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
                     ds = dataset.Dataset(meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h, resource=res)
@@ -24,7 +23,6 @@ def main(args):
                     ds.data_summary()
                     parameters = pd.read_csv(f"hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
-                    # TODO careful not to swap c and res with respect to the name of experiment and hypers
                     files = sorted(
                         glob.glob(f"saved_models/talos-FLBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
 
@@ -37,7 +35,7 @@ def main(args):
                     p = {'first_conv_dim': parameters['first_conv_dim'],
                          'first_conv_kernel': (parameters['first_conv_kernel'],),
                          'first_conv_activation': parameters['first_conv_activation'],
-                         'first_lstm_dim': parameters['second_lstm_dim'],
+                         'first_lstm_dim': parameters['first_lstm_dim'],
                          'first_dense_dim': parameters['first_dense_dim'],
                          'first_dense_activation': dense_act,
                          'batch_size': parameters['batch_size'],

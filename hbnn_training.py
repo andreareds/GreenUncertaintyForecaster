@@ -15,7 +15,7 @@ def main(args):
         for res in args.resources.split("-"):
             for h in hs:
                 for c in args.clusters.split("-"):
-                    experiment_name = f"HBNN-{res}-{c}-w{win}-h{h}"
+                    experiment_name = f"HBNN-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
                     ds = dataset.Dataset(meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h, resource=res)
@@ -23,7 +23,6 @@ def main(args):
                     ds.data_summary()
                     parameters = pd.read_csv(f"hyperparams/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
-                    # TODO careful not to swap c and res with respect to the name of experiment and hypers
                     files = sorted(
                         glob.glob(f"saved_models/talos-HBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
 
@@ -40,8 +39,8 @@ def main(args):
                          'first_dense_dim': parameters['first_dense_dim'],
                          'first_dense_activation': dense_act,
                          'batch_size': parameters['batch_size'],
-                         # 'epochs': parameters['epochs'],
-                         'epochs': 1,
+                         'epochs': parameters['epochs'],
+                         # 'epochs': 1,
                          'patience': parameters['patience'],
                          'optimizer': parameters['optimizer'],
                          'batch_normalization': True,
