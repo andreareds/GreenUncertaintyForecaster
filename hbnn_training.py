@@ -18,14 +18,14 @@ def main(args):
                     experiment_name = f"HBNN-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
-                    ds = dataset.Dataset(args.datapath, meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h,
+                    ds = dataset.Dataset(f"{args.projectpath}/saved_data/", meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h,
                                          resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
-                    parameters = pd.read_csv(f"{args.hyperspath}/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
+                    parameters = pd.read_csv(f"{args.projectpath}/hyperparams/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
                     files = sorted(
-                        glob.glob(f"{args.modelspath}/talos-HBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
+                        glob.glob(f"{args.projectpath}/saved_models/talos-HBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
 
                     dense_act = 'relu'
                     if 'relu' in parameters['first_dense_activation']:
@@ -85,12 +85,14 @@ def main(args):
                     train_mean = np.concatenate(train_distribution.mean().numpy(), axis=0)
                     train_std = np.concatenate(train_distribution.stddev().numpy(), axis=0)
 
-                    save_results.save_uncertainty_csv(train_mean, train_std,
+                    save_results.save_uncertainty_csv(args.projectpath,
+                                                      train_mean, train_std,
                                                       np.concatenate(ds.y_train, axis=0),
                                                       'avg' + res,
                                                       'train-' + model.name)
 
-                    save_results.save_uncertainty_csv(np.concatenate(prediction_mean, axis=0),
+                    save_results.save_uncertainty_csv(args.projectpath,
+                                                      np.concatenate(prediction_mean, axis=0),
                                                       np.concatenate(prediction_std, axis=0),
                                                       np.concatenate(ds.y_test[:len(prediction_mean)], axis=0),
                                                       'avg' + res,
@@ -100,25 +102,11 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--datapath",
+        "--projectpath",
         default=False,
         type=str,
         required=True,
-        help="The path to the data"
-    )
-    parser.add_argument(
-        "--hyperspath",
-        default=False,
-        type=str,
-        required=True,
-        help="The path to the hyperparameters cfgs"
-    )
-    parser.add_argument(
-        "--modelspath",
-        default=False,
-        type=str,
-        required=True,
-        help="The path to the models"
+        help="The path to the project"
     )
     parser.add_argument(
         "--windows",

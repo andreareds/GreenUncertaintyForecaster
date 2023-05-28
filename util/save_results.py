@@ -10,8 +10,8 @@ def save_output_csv(preds, labels, feature, filename):
     df.to_csv(PATH)
 
 
-def save_uncertainty_csv(preds, std, labels, feature, filename):
-    PATH = "res/output_" + filename + ".csv"
+def save_uncertainty_csv(projectpath, preds, std, labels, feature, filename):
+    PATH = f"{projectpath}/res/output_" + filename + ".csv"
     dct = {feature: preds,
            'std': std,
            'labels': labels}
