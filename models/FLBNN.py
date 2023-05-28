@@ -215,7 +215,7 @@ class FLBNNPredictor(ModelInterface):
                    activation=p['first_conv_activation'],
                    input_shape=input_shape)(input_tensor)
 
-        x = LSTM(p['second_lstm_dim'])(x)
+        x = LSTM(p['first_lstm_dim'])(x)
 
         x = VarLayer('var', p['first_dense_dim'],
                      self.prior,
