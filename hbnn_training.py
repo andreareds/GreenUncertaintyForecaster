@@ -22,7 +22,7 @@ def main(args):
                                          resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
-                    parameters = pd.read_csv(f"hyperparams/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
+                    parameters = pd.read_csv(f"/hyperparams/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
                     files = sorted(
                         glob.glob(f"saved_models/talos-HBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
