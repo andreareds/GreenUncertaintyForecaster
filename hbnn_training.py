@@ -18,7 +18,8 @@ def main(args):
                     experiment_name = f"HBNN-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
-                    ds = dataset.Dataset(meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h, resource=res)
+                    ds = dataset.Dataset(args.datapath, meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h,
+                                         resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
                     parameters = pd.read_csv(f"hyperparams/HBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
@@ -39,8 +40,8 @@ def main(args):
                          'first_dense_dim': parameters['first_dense_dim'],
                          'first_dense_activation': dense_act,
                          'batch_size': parameters['batch_size'],
-                         'epochs': parameters['epochs'],
-                         # 'epochs': 1,
+                         # 'epochs': parameters['epochs'],
+                         'epochs': 1,
                          'patience': parameters['patience'],
                          'optimizer': parameters['optimizer'],
                          'batch_normalization': True,
@@ -98,6 +99,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--datapath",
+        default=False,
+        type=str,
+        required=True,
+        help="The path to the data"
+    )
     parser.add_argument(
         "--windows",
         default=False,

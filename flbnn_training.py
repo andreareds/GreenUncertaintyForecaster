@@ -18,7 +18,8 @@ def main(args):
                     experiment_name = f"FLBNN-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
-                    ds = dataset.Dataset(meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h, resource=res)
+                    ds = dataset.Dataset(args.datapath, meta=False, filename=f"ali20/{c}.csv", winSize=win, horizon=h,
+                                         resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
                     parameters = pd.read_csv(f"hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
@@ -98,6 +99,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--datapath",
+        default=False,
+        type=str,
+        required=True,
+        help="The path to the data"
+    )
     parser.add_argument(
         "--windows",
         default=False,

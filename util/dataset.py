@@ -8,11 +8,13 @@ import pickle
 
 
 class Dataset:
-    def __init__(self, meta=None, filename="res_task_a.csv", winSize=144, horizon=0, resource='cpu',
+    def __init__(self, data_path, meta=None, filename="res_task_a.csv", winSize=144, horizon=0, resource='cpu',
                  train_split=0.8):
         # Definition of all the instance attributes
         # Name of the experiment
         self.name = filename
+
+        self.data_path = data_path
 
         # Training instances
         self.X_train = []
@@ -36,7 +38,6 @@ class Dataset:
 
         # Input files
         self.data_file = self.name  # "res_task_e.csv"  # "req_win_a.csv"  # "winDataset.csv"  # None
-        self.data_path = '../saved_data/'
 
         # Train/test split
         self.train_split = train_split
