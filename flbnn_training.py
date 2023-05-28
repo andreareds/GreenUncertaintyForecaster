@@ -24,6 +24,7 @@ def main(args):
                     ds.data_summary()
 
                     files = []
+                    p = None
                     if not args.tuning_hypers:
                         parameters = pd.read_csv(f"{args.projectpath}/hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
