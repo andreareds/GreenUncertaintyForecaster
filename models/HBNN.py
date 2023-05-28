@@ -37,7 +37,7 @@ class HBNNPredictor(ModelInterface):
         self.train_model = None
         self.model = None
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
-                               'first_conv_kernel': [3, 5, 7, 11],
+                               'first_conv_kernel': [3, 6, 9, 12],
                                'first_conv_activation': ['relu', 'tanh'],
                                'second_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
@@ -45,10 +45,9 @@ class HBNNPredictor(ModelInterface):
                                'dense_kernel_init': ['he_normal', 'glorot_uniform'],
                                'batch_size': [256, 512, 1024],
                                'epochs': [2000],
-                               'patience': [50],
-                               'optimizer': ['adam', 'rmsprop'],
+                               'patience': [30],
+                               'optimizer': ['adam'],
                                'lr': [1E-3, 1E-4, 1E-5],
-                               'momentum': [0.9, 0.99],
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
 
