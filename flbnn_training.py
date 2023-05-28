@@ -22,33 +22,36 @@ def main(args):
                                          resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
-                    parameters = pd.read_csv(f"{args.projectpath}/hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
-                    files = sorted(
-                        glob.glob(f"{args.projectpath}/saved_models/talos-FLBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
+                    files = []
+                    if not args.tuning_hypers:
+                        parameters = pd.read_csv(f"{args.projectpath}/hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
-                    dense_act = 'relu'
-                    if 'relu' in parameters['first_dense_activation']:
+                        files = sorted(
+                            glob.glob(f"{args.projectpath}/saved_models/talos-FLBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
+
                         dense_act = 'relu'
-                    elif 'tanh' in parameters['first_dense_activation']:
-                        dense_act = 'tanh'
+                        if 'relu' in parameters['first_dense_activation']:
+                            dense_act = 'relu'
+                        elif 'tanh' in parameters['first_dense_activation']:
+                            dense_act = 'tanh'
 
-                    p = {'first_conv_dim': parameters['first_conv_dim'],
-                         'first_conv_kernel': (parameters['first_conv_kernel'],),
-                         'first_conv_activation': parameters['first_conv_activation'],
-                         'first_lstm_dim': parameters['first_lstm_dim'],
-                         'first_dense_dim': parameters['first_dense_dim'],
-                         'first_dense_activation': dense_act,
-                         'batch_size': parameters['batch_size'],
-                         'epochs': parameters['epochs'],
-                         'patience': parameters['patience'],
-                         'optimizer': parameters['optimizer'],
-                         'batch_normalization': True,
-                         'lr': parameters['lr'],
-                         'momentum': parameters['momentum'],
-                         'decay': parameters['decay'],
-                         'pred_steps': 0,
-                         }
+                        p = {'first_conv_dim': parameters['first_conv_dim'],
+                             'first_conv_kernel': (parameters['first_conv_kernel'],),
+                             'first_conv_activation': parameters['first_conv_activation'],
+                             'first_lstm_dim': parameters['first_lstm_dim'],
+                             'first_dense_dim': parameters['first_dense_dim'],
+                             'first_dense_activation': dense_act,
+                             'batch_size': parameters['batch_size'],
+                             'epochs': parameters['epochs'],
+                             'patience': parameters['patience'],
+                             'optimizer': parameters['optimizer'],
+                             'batch_normalization': True,
+                             'lr': parameters['lr'],
+                             'momentum': parameters['momentum'],
+                             'decay': parameters['decay'],
+                             'pred_steps': 0,
+                             }
 
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
                     model = FLBNN.FLBNNPredictor()
