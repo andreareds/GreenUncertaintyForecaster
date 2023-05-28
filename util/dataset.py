@@ -36,7 +36,7 @@ class Dataset:
 
         # Input files
         self.data_file = self.name  # "res_task_e.csv"  # "req_win_a.csv"  # "winDataset.csv"  # None
-        self.data_path = './saved_data/'
+        self.data_path = '../saved_data/'
 
         # Train/test split
         self.train_split = train_split
