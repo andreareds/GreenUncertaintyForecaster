@@ -75,11 +75,18 @@ def main(args):
                                                                                                        ds.y_test,
                                                                                                        p)
                     else:
-                        train_model, _, prediction_mean, prediction_std, _, _ = model.training(ds.X_train,
-                                                                                               ds.y_train,
-                                                                                               ds.X_test,
-                                                                                               ds.y_test,
-                                                                                               p)
+                        if args.tuning_hypers:
+                            train_model, _, _ = model.training_talos(ds.X_train,
+                                                                     ds.y_train,
+                                                                     ds.X_test,
+                                                                     ds.y_test,
+                                                                     p)
+                        else:
+                            train_model, _, prediction_mean, prediction_std, _, _ = model.training(ds.X_train,
+                                                                                                   ds.y_train,
+                                                                                                   ds.X_test,
+                                                                                                   ds.y_test,
+                                                                                                   p)
 
                     train_distribution = train_model(ds.X_train)
                     train_mean = np.concatenate(train_distribution.mean().numpy(), axis=0)
@@ -135,6 +142,13 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="The horizons to use (provide names separated by dashes)."
+    )
+    parser.add_argument(
+        "--tuning_hypers",
+        default=None,
+        type=int,
+        required=True,
+        help="Whether to perform hyperparams tuning with talos (1 yes, 0 no)"
     )
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "1"

@@ -38,7 +38,7 @@ class FLBNNPredictor(ModelInterface):
         self.model = None
 
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
-                               'first_conv_kernel': [3, 5, 7, 11],
+                               'first_conv_kernel': [3, 6, 9, 12],
                                'first_conv_activation': ['relu', 'tanh'],
                                'first_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
@@ -46,9 +46,8 @@ class FLBNNPredictor(ModelInterface):
                                'batch_size': [256, 512, 1024],
                                'epochs': [2000],
                                'patience': [50],
-                               'optimizer': ['adam', 'rmsprop'],
+                               'optimizer': ['adam'],
                                'lr': [1E-3, 1E-4, 1E-5],
-                               'momentum': [0.9, 0.99],
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
 
@@ -127,7 +126,7 @@ class FLBNNPredictor(ModelInterface):
         return self.model, history, tuning_time
 
     # TODO can we remove unused params?
-    def training_talos(self, X_train, y_train):
+    def training_talos(self, X_train, y_train,  X_test, y_test, p):
         tf.keras.backend.clear_session()
         self.input_shape = X_train.shape[1:]
 
