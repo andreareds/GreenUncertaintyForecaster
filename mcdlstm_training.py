@@ -45,31 +45,31 @@ for tuning_rate in tuning_rates:
                         best_mse = 100000
 
                         # Read the best hyperparameters
-                        parameters = pd.read_csv("hyperparams/p_lstm-" + c + ".csv").iloc[0]
+                        # parameters = pd.read_csv("hyperparams/p_lstm-" + c + ".csv").iloc[0]
 
                         dense_act = 'relu'
-                        if 'relu' in parameters['first_dense_activation']:
-                            dense_act = 'relu'
-                        elif 'tanh' in parameters['first_dense_activation']:
-                            dense_act = 'tanh'
+                        # if 'relu' in parameters['first_dense_activation']:
+                        #     dense_act = 'relu'
+                        # elif 'tanh' in parameters['first_dense_activation']:
+                        #     dense_act = 'tanh'
 
-                        p = {'first_conv_dim': parameters['first_conv_dim'],
-                             'first_conv_activation': parameters['first_conv_activation'],
-                             'first_conv_kernel': (parameters['first_conv_kernel'],),
+                        p = {'first_conv_dim': 32, #parameters['first_conv_dim'],
+                             'first_conv_activation': 'relu', #parameters['first_conv_activation'],
+                             'first_conv_kernel': (7,),#(parameters['first_conv_kernel'],),
                              'conv_dropout': 0.05,  # parameters['conv_dropout'],
-                             'second_lstm_dim': parameters['second_lstm_dim'],
+                             'second_lstm_dim': 32, #parameters['second_lstm_dim'],
                              'lstm_dropout': 0.05,  # parameters['lstm_dropout'],
-                             'first_dense_dim': parameters['first_dense_dim'],
+                             'first_dense_dim': 16,#parameters['first_dense_dim'],
                              'first_dense_activation': dense_act,
                              'dense_dropout': 0.05,  # parameters['dense_dropout'],
-                             'batch_size': parameters['batch_size'],
+                             'batch_size': 64,#parameters['batch_size'],
                              'epochs': 2,  # parameters['epochs'],
-                             'patience': parameters['patience'],
-                             'optimizer': parameters['optimizer'],
+                             'patience': 10,#parameters['patience'],
+                             'optimizer': 'adam',#parameters['optimizer'],
                              'batch_normalization': True,
-                             'lr': parameters['lr'],
-                             'momentum': parameters['momentum'],
-                             'decay': parameters['decay'],
+                             'lr': 0.001,#parameters['lr'],
+                             'momentum': 0.01,#parameters['momentum'],
+                             'decay': 0.001#parameters['decay'],
                              }
 
                         print(p)
