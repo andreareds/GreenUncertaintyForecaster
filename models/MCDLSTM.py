@@ -179,11 +179,11 @@ class MCDLSTMPredictor(ModelInterface):
                                    strides=1, padding="causal",
                                    activation=p['first_conv_activation'],
                                    input_shape=input_shape),
-            tf.keras.layers.Dropout(p['conv_dropout'], training=True),
+            tf.keras.layers.Dropout(p['conv_dropout'], trainable=True),
             tf.keras.layers.LSTM(p['second_lstm_dim']),
-            tf.keras.layers.Dropout(p['lstm_dropout'], training=True),
+            tf.keras.layers.Dropout(p['lstm_dropout'], trainable=True),
             tf.keras.layers.Dense(p['first_dense_dim'], activation=p['first_dense_activation']),
-            tf.keras.layers.Dropout(p['dense_dropout'], training=True),
+            tf.keras.layers.Dropout(p['dense_dropout'], trainable=True),
             tf.keras.layers.Dense(1),
         ])
 
