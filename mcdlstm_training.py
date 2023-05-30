@@ -34,7 +34,7 @@ for tuning_rate in tuning_rates:
                                               '-ts' + str(int(ts * 100))
 
                             # Data creation and load
-                        ds = dataset.Dataset(data_path='cg19', meta=False, filename='res_task_' + c + '.csv', winSize=win, horizon=h,
+                        ds = dataset.Dataset(data_path='cg19/', meta=False, filename='res_task_' + c + '.csv', winSize=win, horizon=h,
                                              resource=res, train_split=ts)
                         print(ds.name)
                         ds.dataset_creation()
