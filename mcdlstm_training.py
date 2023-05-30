@@ -82,13 +82,15 @@ for tuning_rate in tuning_rates:
                             model.name = experiment_name
                             start = datetime.now()
 
-                            train_model, history, forecast, training_time, inference_time = \
+                            trained_model, history, prediction_mean, prediction_std, training_time, inference_time = \
                                 model.training(ds.X_train, ds.y_train,
                                                ds.X_test,
                                                ds.y_test, p)
                             training_times.append(training_time)
                             inference_times.append(inference_time)
 
+
+                            # to be fixed
                             if tuning:
                                 for i in range(int(ds.X_test.shape[0] / tuning_rate) - 1):
                                     train_model, history, tuning_time = model.tuning(
@@ -123,26 +125,6 @@ for tuning_rate in tuning_rates:
                         forecast = best_prediction_mean
                         history = best_history
                         train_model = best_model
-
-                        plot_training.plot_series(np.arange(0, len(ds.y_test) - 1), ds.y_test, forecast,
-                                                  label1="ground truth",
-                                                  label2="prediction", title=model.name)
-
-                        plot_training.plot_loss(history, model.name)
-
-                        plot_model(train_model, to_file='img/models/model_plot_' + model.name + '.png',
-                                   show_shapes=True,
-                                   show_layer_names=True)
-
-                        plot_training.plot_series(np.arange(0, len(ds.y_test) - 1), ds.y_test, forecast,
-                                                  label1="ground truth",
-                                                  label2="prediction", title=model.name)
-
-                        plot_training.plot_loss(history, model.name)
-
-                        plot_model(train_model, to_file='img/models/model_plot_' + model.name + '.png',
-                                   show_shapes=True,
-                                   show_layer_names=True)
 
                         save_results.save_errors(mses, maes, model.name)
 

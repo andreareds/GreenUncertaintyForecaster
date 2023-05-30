@@ -38,6 +38,13 @@ class MCDLSTMPredictor(ModelInterface):
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
 
+    def compute_predictions(self, X_test, iterations=30):
+        prediction = []
+        for i in range(iterations):
+            prediction.append(self.model(X_test))
+
+        return np.mean(prediction), np.std(prediction)
+
     def training(self, X_train, y_train, X_test, y_test, p):
         training_start = datetime.now()
         history, self.model = self.talos_model(X_train, y_train, X_test, y_test, p)
@@ -47,12 +54,10 @@ class MCDLSTMPredictor(ModelInterface):
         print(history)
 
         inference_start = datetime.now()
-        forecast = self.train_model.predict(X_test)
-        forecast = forecast[:, -1]
-        forecast = forecast[~np.isnan(forecast)]
+        prediction_mean, prediction_std = self.compute_predictions(X_test)
         inference_time = (datetime.now() - inference_start) / y_test.shape[0]
 
-        return self.model, history, forecast, training_time, inference_time
+        return self.model, history, prediction_mean, prediction_std, training_time, inference_time
 
     def tuning(self, X_tuning, y_tuning, p):
         save_check = custom_keras.CustomSaveCheckpoint(self)
@@ -83,6 +88,17 @@ class MCDLSTMPredictor(ModelInterface):
 
         return t, None, None
 
+    def load_and_predict(self, X_train, y_train, X_test, y_test, p):
+        self.train_model = self.load_model(X_train, p)
+        self.model = self.train_model
+
+        prediction_mean, prediction_std = self.compute_predictions(X_test)
+
+        prediction_mean = np.concatenate(prediction_mean)
+        prediction_std = np.concatenate(prediction_std)
+
+        return self.model, prediction_mean, prediction_std
+
     def load_and_tune(self, X_train, y_train, X_test, y_test, p):
         global opt
         self.train_model = self.load_model(X_train, y_train, X_test, y_test, p)
@@ -108,39 +124,16 @@ class MCDLSTMPredictor(ModelInterface):
 
         self.model = save_check.dnn.model
 
-        forecast = self.train_model.predict(X_test)
+        prediction_mean, prediction_std = self.compute_predictions(X_test)
 
-        forecast = forecast[:, -1]
-        forecast = forecast[~np.isnan(forecast)]
+        prediction_mean = np.concatenate(prediction_mean)
+        prediction_std = np.concatenate(prediction_std)
 
-        return self.model, history, forecast
+        return self.model, prediction_mean, prediction_std
 
     def load_model(self, X_train, y_train, x_val, y_val, p):
         tf.keras.backend.clear_session()
         input_shape = X_train.shape[1:]
-
-        # input_tensor = Input(shape=input_shape)
-        #
-        # x = Conv1D(filters=p['first_conv_dim'], kernel_size=5,
-        #            strides=1, padding="causal",
-        #            activation=p['first_conv_activation'],
-        #            input_shape=input_shape)(input_tensor)
-        #
-        # x = Dropout(x, trainable=True)(x)
-        #
-        # x = LSTM(p['second_lstm_dim'])(x)
-        #
-        # x = VarLayer('var', p['first_dense_dim'],
-        #              self.prior,
-        #              self.posterior,
-        #              1 / X_train.shape[0],
-        #              p['first_dense_activation'])(x)
-        #
-        # distribution_params = layers.Dense(units=2)(x)
-        # outputs = tfp.layers.IndependentNormal(1)(distribution_params)
-        # opt = None
-        # self.train_model = Model(inputs=input_tensor, outputs=outputs)
-
 
         self.train_model = Sequential([
             tf.keras.layers.Conv1D(filters=p['first_conv_dim'], kernel_size=p['first_conv_kernel'],
