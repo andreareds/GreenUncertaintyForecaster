@@ -98,7 +98,7 @@ class LSTMQPredictor(ModelInterface):
 
         x = layers.Dense(p['first_dense_dim'], activation=p['first_dense_activation'])(x)
 
-        outputs = layers.Dense(units=7)(x)
+        outputs = layers.Dense(units=len(self.q))(x)
 
         self.train_model = Model(inputs=input_tensor, outputs=outputs)
 
