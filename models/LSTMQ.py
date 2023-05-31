@@ -17,9 +17,9 @@ from datetime import datetime
 from keras import backend as K
 
 
-class LSTMDPredictor(ModelInterface):
+class LSTMQPredictor(ModelInterface):
     def __init__(self):
-        ModelInterface.__init__(self, "LSTMDPredictor")
+        ModelInterface.__init__(self, "LSTMQPredictor")
 
         self.input_shape = None
         self.train_model = None
