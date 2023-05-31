@@ -140,7 +140,7 @@ class Dataset:
                 if self.normalization == "standard":
                     self.scalers[i] = StandardScaler()
                 elif self.normalization == "minmax":
-                    self.scalers[i] = MinMaxScaler((-1, 1)) 
+                    self.scalers[i] = MinMaxScaler()
                 self.X_train[:, :, i] = self.scalers[i].fit_transform(self.X_train[:, :, i])
                 self.X_test[:, :, i] = self.scalers[i].transform(self.X_test[:, :, i])
                 self.y_train = self.scalers[i].fit_transform(self.y_train)
