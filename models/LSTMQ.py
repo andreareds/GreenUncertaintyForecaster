@@ -39,7 +39,7 @@ class LSTMQPredictor(ModelInterface):
                                'momentum': [0.9],
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
-        self.q = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.97, 0.98, 0.99]
+        self.q = np.array([0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.97, 0.98, 0.99])
 
     def training(self, X_train, y_train, X_test, y_test, p):
         training_start = datetime.now()
