@@ -14,6 +14,7 @@ from sklearn.metrics import mean_squared_error
 from util import plot_training
 from keras.utils.vis_utils import plot_model
 from datetime import datetime
+from keras import backend as K
 
 
 class LSTMDPredictor(ModelInterface):
@@ -38,13 +39,7 @@ class LSTMDPredictor(ModelInterface):
                                'momentum': [0.9],
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
-
-    def compute_predictions(self, model, X_test):
-        prediction_distribution = model(X_test)
-        prediction_mean = prediction_distribution.mean().numpy().tolist()
-        prediction_stdv = prediction_distribution.stddev().numpy().tolist()
-
-        return prediction_mean, prediction_stdv
+        self.q = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.97, 0.98, 0.99]
 
     def training(self, X_train, y_train, X_test, y_test, p):
         training_start = datetime.now()
@@ -52,13 +47,10 @@ class LSTMDPredictor(ModelInterface):
         training_time = datetime.now() - training_start
 
         inference_start = datetime.now()
-        prediction_mean, prediction_std = self.compute_predictions(self.model, X_test)
+        prediction_quantiles = self.train_model.predict(X_test)
         inference_time = (datetime.now() - inference_start) / y_test.shape[0]
 
-        prediction_mean = np.concatenate(prediction_mean, axis=0)
-        prediction_std = np.concatenate(prediction_std, axis=0)
-
-        return self.model, history, prediction_mean, prediction_std, training_time, inference_time
+        return self.model, history, prediction_quantiles, training_time, inference_time
 
     def tuning(self, X_tuning, y_tuning, p):
         save_check = custom_keras.CustomSaveCheckpoint(self)
@@ -85,7 +77,9 @@ class LSTMDPredictor(ModelInterface):
                        params=p,
                        clear_session=True,
                        print_params=True,
-                       round_limit=500)
+                       reduction_method='correlation',
+                       reduction_metric=self.quantile_loss,
+                       round_limit=250)
 
         return t, None, None
 
@@ -104,8 +98,7 @@ class LSTMDPredictor(ModelInterface):
 
         x = layers.Dense(p['first_dense_dim'], activation=p['first_dense_activation'])(x)
 
-        distribution_params = layers.Dense(units=2)(x)
-        outputs = tfp.layers.IndependentNormal(1)(distribution_params)
+        outputs = layers.Dense(units=7)(x)
 
         self.train_model = Model(inputs=input_tensor, outputs=outputs)
 
@@ -117,7 +110,7 @@ class LSTMDPredictor(ModelInterface):
             opt = Nadam(learning_rate=p['lr'])
         elif p['optimizer'] == 'sgd':
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
-        self.train_model.compile(loss=self.negative_loglikelihood,
+        self.train_model.compile(loss=self.quantile_loss,
                                  optimizer=opt,
                                  metrics=["mse", "mae"])
 
@@ -131,31 +124,9 @@ class LSTMDPredictor(ModelInterface):
 
         return history, self.model
 
-    def negative_loglikelihood(self, targets, estimated_distribution):
-        return -estimated_distribution.log_prob(targets)
-
-    def prior(self, kernel_size, bias_size, dtype=None):
-        n = kernel_size + bias_size
-        prior_model = keras.Sequential(
-            [
-                tfp.layers.DistributionLambda(
-                    lambda t: tfp.distributions.MultivariateNormalDiag(
-                        loc=tf.zeros(n), scale_diag=tf.ones(n)
-                    )
-                )
-            ]
-        )
-        return prior_model
-
-    def posterior(self, kernel_size, bias_size, dtype=None):
-        n = kernel_size + bias_size
-        posterior_model = keras.Sequential(
-            [
-                tfp.layers.VariableLayer(tfp.layers.MultivariateNormalTriL.params_size(n)),
-                tfp.layers.MultivariateNormalTriL(n),
-            ]
-        )
-        return posterior_model
+    def quantile_loss(self, y_true, y_pred):
+        e = y_true - y_pred
+        return K.mean(K.maximum(self.q*e, (self.q-1)*e), axis=-1)
 
     def save_model(self):
         if self.train_model is None:
