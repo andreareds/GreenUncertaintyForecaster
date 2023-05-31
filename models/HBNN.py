@@ -137,7 +137,9 @@ class HBNNPredictor(ModelInterface):
                        params=p,
                        clear_session=True,
                        print_params=True,
-                       round_limit=500)
+                       reduction_method='correlation',
+                       reduction_metric=self.negative_loglikelihood,
+                       round_limit=250)
 
         return t, None, None
 
