@@ -1,11 +1,10 @@
-from util import dataset, plot_training, save_results
+from util import dataset, save_results
 import numpy as np
 from models import MCDLSTM
-from keras.utils.vis_utils import plot_model
 import pandas as pd
 import os
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from datetime import datetime
+import argparse
+import glob
 
 
 def main(args):
@@ -16,7 +15,7 @@ def main(args):
         for res in args.resources.split("-"):
             for h in hs:
                 for c in args.clusters.split("-"):
-                    experiment_name = f"FLBNN-{c}-{res}-w{win}-h{h}"
+                    experiment_name = f"MCDLSTM-{c}-{res}-w{win}-h{h}"
 
                     # Data creation and load
                     ds = dataset.Dataset(f"{args.projectpath}/saved_data/", meta=False, filename=f"ali20/{c}.csv",
@@ -29,11 +28,11 @@ def main(args):
                     p = None
                     if not args.tuning_hypers:
                         parameters = \
-                        pd.read_csv(f"{args.projectpath}/hyperparams/FLBNN-{c}-{res}-w{win}-h{h}.csv").iloc[0]
+                            pd.read_csv(f"{args.projectpath}/hyperparams/MCDLSTM-{c}-{res}-w{win}-h{h}.csv").iloc[0]
 
                         files = sorted(
                             glob.glob(
-                                f"{args.projectpath}/saved_models/talos-FLBNN-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
+                                f"{args.projectpath}/saved_models/talos-MCDLSTM-{c}-{res}-w{win}-h{h}*_weights.tf.i*"))
 
                         dense_act = 'relu'
                         if 'relu' in parameters['first_dense_activation']:
