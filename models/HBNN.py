@@ -137,7 +137,7 @@ class HBNNPredictor(ModelInterface):
                        clear_session=True,
                        print_params=True,
                        reduction_method='correlation',
-                       reduction_metric=self.negative_loglikelihood,
+                       reduction_metric="mae",
                        round_limit=250)
 
         return t, None, None
@@ -178,7 +178,7 @@ class HBNNPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
-                                 metrics=["mse", "mae", self.negative_loglikelihood])
+                                 metrics=["mse", "mae"])
 
         self.train_model.load_weights(p['weight_file'])
 
@@ -218,7 +218,7 @@ class HBNNPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
-                                 metrics=["mse", "mae", self.negative_loglikelihood])
+                                 metrics=["mse", "mae"])
 
         save_check = custom_keras.CustomSaveCheckpoint(self)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=p['patience'])

@@ -138,7 +138,7 @@ class FLBNNPredictor(ModelInterface):
                        clear_session=True,
                        print_params=True,
                        reduction_method='correlation',
-                       reduction_metric=self.negative_loglikelihood,
+                       reduction_metric="mae",
                        round_limit=250)
 
         return t, None, None
@@ -199,13 +199,12 @@ class FLBNNPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
-                                 metrics=["mse", "mae", self.negative_loglikelihood])
+                                 metrics=["mse", "mae"])
 
         self.train_model.load_weights(p['weight_file'])
 
         return self.train_model
 
-    # TODO can we remove unused params?
     def talos_model(self, X_train, y_train, x_val, y_val, p):
         tf.keras.backend.clear_session()
         input_shape = X_train.shape[1:]
