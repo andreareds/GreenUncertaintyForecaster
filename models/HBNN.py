@@ -178,7 +178,7 @@ class HBNNPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
-                                 metrics=["mse", "mae"])
+                                 metrics=["mse", "mae", self.negative_loglikelihood])
 
         self.train_model.load_weights(p['weight_file'])
 
