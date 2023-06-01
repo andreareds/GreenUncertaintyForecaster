@@ -1,18 +1,12 @@
 import numpy as np
 import tensorflow as tf
 import talos
-from tensorflow import keras
 from tensorflow.keras import layers, Model
 from tensorflow.keras.layers import Dense, LSTM, Conv1D, Flatten, Activation, Dropout, BatchNormalization, Input
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import RMSprop, Adam, Nadam, SGD
 from tensorflow.keras.callbacks import EarlyStopping
-import tensorflow_probability as tfp
 from util import custom_keras
 from models.model_interface import ModelInterface
-from sklearn.metrics import mean_squared_error
-from util import plot_training
-from keras.utils.vis_utils import plot_model
 from datetime import datetime
 from keras import backend as K
 
@@ -25,21 +19,20 @@ class LSTMQPredictor(ModelInterface):
         self.train_model = None
         self.model = None
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
-                               'first_conv_kernel': [3, 5, 7, 11],
-                               'first_conv_activation': ['relu', 'tanh'],
+                               'first_conv_kernel': [3, 6, 9, 12],
+                               'first_conv_activation': ['relu'],
                                'second_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
-                               'first_dense_activation': ['relu', 'tanh'],
-                               'dense_kernel_init': ['he_normal', 'glorot_uniform'],
+                               'first_dense_activation': ['relu'],
                                'batch_size': [256, 512, 1024],
                                'epochs': [2000],
-                               'patience': [50],
-                               'optimizer': ['adam', 'rmsprop'],
+                               'patience': [30],
+                               'optimizer': ['adam'],
                                'lr': [1E-3, 1E-4, 1E-5],
-                               'momentum': [0.9],
                                'decay': [1E-3, 1E-4, 1E-5],
                                }
-        self.q = np.array([0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.97, 0.98, 0.99])
+        # self.q = np.array([0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.97, 0.98, 0.99])
+        self.q = np.array([0.95])
 
     def training(self, X_train, y_train, X_test, y_test, p):
         training_start = datetime.now()
@@ -112,7 +105,7 @@ class LSTMQPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.quantile_loss,
                                  optimizer=opt,
-                                 metrics=["mse", "mae"])
+                                 metrics=["mse", "mae", self.quantile_loss])
 
         save_check = custom_keras.CustomSaveCheckpoint(self)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=p['patience'])

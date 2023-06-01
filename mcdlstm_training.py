@@ -40,6 +40,7 @@ def main(args):
                         elif 'tanh' in parameters['first_dense_activation']:
                             dense_act = 'tanh'
 
+                        # TODO check
                         p = {'first_conv_dim': parameters['first_conv_dim'],
                              'first_conv_kernel': (parameters['first_conv_kernel'],),
                              'first_conv_activation': parameters['first_conv_activation'],
@@ -52,10 +53,26 @@ def main(args):
                              'optimizer': parameters['optimizer'],
                              'batch_normalization': True,
                              'lr': parameters['lr'],
-                             'momentum': parameters['momentum'],
                              'decay': parameters['decay'],
                              'pred_steps': 0,
                              }
+
+                        self.parameter_list = {'first_conv_dim': [32, 64, 128],
+                                               'first_conv_kernel': [3, 6, 9, 12],
+                                               'first_conv_activation': ['relu'],
+                                               'conv_dropout': [0.0, 0.05, 0.10],
+                                               'second_lstm_dim': [16, 32, 64],
+                                               'lstm_dropout': [0.0, 0.05, 0.10],
+                                               'first_dense_dim': [16, 32, 64],
+                                               'first_dense_activation': ['relu'],
+                                               'dense_dropout': [0.0, 0.05, 0.10],
+                                               'batch_size': [256, 512, 1024],
+                                               'epochs': [2000],
+                                               'patience': [30],
+                                               'optimizer': ['adam'],
+                                               'lr': [1E-3, 1E-4, 1E-5],
+                                               'decay': [1E-3, 1E-4, 1E-5],
+                                               }
 
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
                     model = MCDLSTM.MCDLSTMPredictor()

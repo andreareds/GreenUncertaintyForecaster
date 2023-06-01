@@ -39,10 +39,10 @@ class FLBNNPredictor(ModelInterface):
 
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
                                'first_conv_kernel': [3, 6, 9, 12],
-                               'first_conv_activation': ['relu', 'tanh'],
+                               'first_conv_activation': ['relu'],
                                'first_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
-                               'first_dense_activation': [keras.activations.relu, keras.activations.tanh],
+                               'first_dense_activation': [keras.activations.relu],
                                'batch_size': [256, 512, 1024],
                                'epochs': [2000],
                                'patience': [50],
@@ -199,7 +199,7 @@ class FLBNNPredictor(ModelInterface):
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
-                                 metrics=["mse", "mae"])
+                                 metrics=["mse", "mae", self.negative_loglikelihood])
 
         self.train_model.load_weights(p['weight_file'])
 
