@@ -46,9 +46,7 @@ def main(args):
                          'optimizer': parameters['optimizer'],
                          'batch_normalization': True,
                          'lr': parameters['lr'],
-                         'momentum': parameters['momentum'],
                          'decay': parameters['decay'],
-                         'pred_steps': 0,
                          }
 
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
