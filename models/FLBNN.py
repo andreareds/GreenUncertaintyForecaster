@@ -10,6 +10,7 @@ from util import custom_keras
 from models.model_interface import ModelInterface
 import tensorflow_probability as tfp
 from datetime import datetime
+import keras.backend as K
 
 
 @tf.keras.utils.register_keras_serializable()
@@ -36,6 +37,7 @@ class FLBNNPredictor(ModelInterface):
         self.input_shape = None
         self.train_model = None
         self.model = None
+        self.ds = None
 
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
                                'first_conv_kernel': [3, 6, 9, 12],
@@ -52,13 +54,11 @@ class FLBNNPredictor(ModelInterface):
                                }
 
     def compute_predictions(self, X_test, iterations=30):
-        prediction = []
-        for i in range(iterations):
-            prediction.append(self.model(X_test))
-
-        return np.mean(prediction), np.std(prediction)
+        predictions = [np.concatenate(self.model(X_test).numpy(), axis=0) for i in range(iterations)]
+        return np.mean(predictions, axis=0), np.std(predictions, axis=0)
 
     def training(self, X_train, y_train, X_test, y_test, p):
+        # self.build_batches(p['batch_size'])
         training_start = datetime.now()
         history, self.model = self.talos_model(X_train, y_train, X_test, y_test, p)
         training_time = datetime.now() - training_start
@@ -100,7 +100,7 @@ class FLBNNPredictor(ModelInterface):
         save_check = custom_keras.CustomSaveCheckpoint(self)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=p['patience'])
 
-        self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=p['batch_size'],
+        self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=self.ds.X_train.shape[0],
                              validation_split=0.2, verbose=2, callbacks=[es, save_check])
 
         self.model = save_check.dnn.model
@@ -125,7 +125,6 @@ class FLBNNPredictor(ModelInterface):
 
         return self.model, history, tuning_time
 
-    # TODO can we remove unused params?
     def training_talos(self, X_train, y_train,  X_test, y_test, p):
         tf.keras.backend.clear_session()
         self.input_shape = X_train.shape[1:]
@@ -143,7 +142,6 @@ class FLBNNPredictor(ModelInterface):
 
         return t, None, None
 
-    # TODO can we remove unused params?
     def load_model(self, X_train, p):
 
         tf.keras.backend.clear_session()
@@ -211,21 +209,32 @@ class FLBNNPredictor(ModelInterface):
 
         input_tensor = Input(shape=input_shape)
 
-        x = Conv1D(filters=p['first_conv_dim'], kernel_size=5,
-                   strides=1, padding="causal",
-                   activation=p['first_conv_activation'],
-                   input_shape=input_shape)(input_tensor)
+        # Bayesian 1DCNN
+        x = tfp.layers.Convolution1DReparameterization(
+            filters=p['first_lstm_dim'],
+            kernel_size=p['first_conv_kernel'],
+            strides=1,
+            padding="valid",
+            activation=p['first_conv_activation'],
+        )(input_tensor)
 
+        # LSTM
         x = LSTM(p['first_lstm_dim'])(x)
 
-        x = VarLayer('var', p['first_dense_dim'],
-                     self.prior,
-                     self.posterior,
-                     1 / X_train.shape[0],
-                     p['first_dense_activation'])(x)
+        # # Dense (optional)
+        # x = layers.Dense(units=p['first_dense_dim'])(x)
 
-        distribution_params = layers.Dense(units=2)(x)
-        outputs = tfp.layers.IndependentNormal(1)(distribution_params)
+        # Bayesian
+        x = tfp.layers.DenseVariational(name='var',
+                                        units=p['first_dense_dim'],
+                                        make_prior_fn=self.prior,
+                                        make_posterior_fn=self.posterior,
+                                        kl_weight=1 / X_train.shape[0],
+                                        activation=p['first_dense_activation'],
+                                        )(x)
+
+        outputs = layers.Dense(units=1)(x)
+        # outputs = tfp.layers.DenseReparameterization(1)(x)
         opt = None
         self.train_model = Model(inputs=input_tensor, outputs=outputs)
 
@@ -237,6 +246,7 @@ class FLBNNPredictor(ModelInterface):
             opt = Nadam(learning_rate=p['lr'])
         elif p['optimizer'] == 'sgd':
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
+
         self.train_model.compile(loss=self.negative_loglikelihood,
                                  optimizer=opt,
                                  metrics=["mse", "mae"])
@@ -244,16 +254,23 @@ class FLBNNPredictor(ModelInterface):
         save_check = custom_keras.CustomSaveCheckpoint(self)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=p['patience'])
 
-        history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=p['batch_size'],
+        history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=self.ds.X_train.shape[0],
                                        validation_split=0.2, verbose=2, callbacks=[es, save_check])
 
         self.model = save_check.dnn.model
 
         return history, self.model
 
-    @staticmethod
-    def negative_loglikelihood(targets, estimated_distribution):
-        return -estimated_distribution.log_prob(targets)
+    def negative_loglikelihood(self, y_true, y_pred):
+        predictions = [self.train_model(self.ds.X_train) for i in range(2)]
+
+        y_pred_mean, y_pred_log_sigma = tf.math.reduce_mean(predictions, axis=0), \
+            tf.math.reduce_std(predictions, axis=0)
+
+        # Calculate the negative log likelihood
+        loss = 0.5 * K.log(2 * np.pi) + y_pred_log_sigma + 0.5 * \
+               K.square((self.ds.y_train - y_pred_mean) / K.exp(y_pred_log_sigma))
+        return K.mean(loss)
 
     @staticmethod
     def prior(kernel_size, bias_size, dtype=None):
@@ -280,6 +297,15 @@ class FLBNNPredictor(ModelInterface):
             ]
         )
         return posterior_model
+
+    def build_batches(self, batch_size):
+        for i in range(0, int(len(self.ds.X_train)/batch_size), batch_size):
+            if i+batch_size > len(self.ds.X_train):
+                j = len(self.ds.X_train)
+            else:
+                j = i+batch_size
+            self.X_batches[i] = self.ds.X_train[i:j]
+            self.y_batches[i] = self.ds.y_train[i:j]
 
     def save_model(self):
         if self.train_model is None:

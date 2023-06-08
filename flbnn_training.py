@@ -55,7 +55,7 @@ def main(args):
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
                     model = FLBNN.FLBNNPredictor()
                     model.name = experiment_name
-                    train_model = None
+                    model.ds = ds  # TODO might want to pass a copy to be able to shuffle ds
                     prediction_mean = None
                     prediction_std = None
 
@@ -90,9 +90,7 @@ def main(args):
                                                                                                    ds.y_test,
                                                                                                    p)
 
-                    train_distribution = train_model(ds.X_train)
-                    train_mean = np.concatenate(train_distribution.mean().numpy(), axis=0)
-                    train_std = np.concatenate(train_distribution.stddev().numpy(), axis=0)
+                    train_mean, train_std = model.compute_predictions(ds.X_train)
 
                     save_results.save_uncertainty_csv(args.projectpath,
                                                       train_mean, train_std,
@@ -101,9 +99,9 @@ def main(args):
                                                       'train-' + model.name)
 
                     save_results.save_uncertainty_csv(args.projectpath,
-                                                      np.concatenate(prediction_mean, axis=0),
-                                                      np.concatenate(prediction_std, axis=0),
-                                                      np.concatenate(ds.y_test[:len(prediction_mean)], axis=0),
+                                                      prediction_mean,
+                                                      prediction_std,
+                                                      np.concatenate(ds.y_test[:prediction_mean.shape[0]], axis=0),
                                                       'avg' + res,
                                                       model.name)
 

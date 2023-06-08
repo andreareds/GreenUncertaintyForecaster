@@ -71,7 +71,7 @@ class LSTMQPredictor(ModelInterface):
                        clear_session=True,
                        print_params=True,
                        reduction_method='correlation',
-                       reduction_metric=self.quantile_loss,
+                       reduction_metric='mse',
                        round_limit=250)
 
         return t, None, None

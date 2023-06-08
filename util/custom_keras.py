@@ -1,7 +1,4 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras import backend as K
 
 
 class CustomSaveCheckpoint(tf.keras.callbacks.Callback):
