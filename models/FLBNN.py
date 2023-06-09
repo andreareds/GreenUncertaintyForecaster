@@ -150,21 +150,12 @@ class FLBNNPredictor(ModelInterface):
         input_tensor = Input(shape=input_shape)
 
         # Bayesian 1DCNN
-        x = tfp.experimental.nn.ConvolutionVariationalReparameterization(
-            input_size=input_shape,
-            output_size=p['first_conv_dim'],
-            filter_shape=p['first_conv_kernel'],
-            rank=1,
+        x = tfp.layers.Convolution1DReparameterization(
+            filters=p['first_lstm_dim'],
+            kernel_size=p['first_conv_kernel'],
             strides=1,
-            padding="causal",
-            dilations=1,
-            # make_posterior_fn=tfp.experimental.nn.util.make_kernel_bias_posterior_mvn_diag,  # self.posterior?
-            # make_prior_fn=tfp.experimental.nn.util.make_kernel_bias_prior_spike_and_slab,    # self.prior?
-            make_posterior_fn=self.posterior,
-            make_prior_fn=self.prior,
-            posterior_value_fn=tfp.distributions.Distribution.sample,
-            # unpack_weights_fn=unpack_kernel_and_bias,
-            activation_fn=p['first_conv_activation'],
+            padding="valid",
+            activation=p['first_conv_activation'],
         )(input_tensor)
 
         # LSTM
