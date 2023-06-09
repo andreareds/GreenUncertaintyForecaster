@@ -216,13 +216,11 @@ class FLBNNPredictor(ModelInterface):
         # x = layers.Dense(units=p['first_dense_dim'])(x)
 
         # Bayesian
-        x = tfp.layers.DenseVariational(name='var',
-                                        units=p['first_dense_dim'],
-                                        make_prior_fn=self.prior,
-                                        make_posterior_fn=self.posterior,
-                                        kl_weight=1 / X_train.shape[0],
-                                        activation=p['first_dense_activation'],
-                                        )(x)
+        x = VarLayer('var', p['first_dense_dim'],
+                     self.prior,
+                     self.posterior,
+                     1 / X_train.shape[0],
+                     p['first_dense_activation'])(x)
 
         outputs = layers.Dense(units=1)(x)
         # outputs = tfp.layers.DenseReparameterization(1)(x)
