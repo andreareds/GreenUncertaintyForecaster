@@ -5,7 +5,7 @@ import pandas as pd
 import argparse
 from models import FLBNN
 from util import dataset, save_results
-import torch
+import tensorflow as tf
 
 def main(args):
     wins = [eval(i) for i in args.windows.split("-")]
@@ -155,10 +155,8 @@ if __name__ == "__main__":
     main(parser.parse_args())
     # imports are always needed
 
-    # get index of currently selected device
-    torch.cuda.current_device() # returns 0 in my case
-    # get number of GPUs available
-    torch.cuda.device_count() # returns 1 in my case
-    # get the name of the device
-    torch.cuda.get_device_name(0) # good old Tesla K80
+    tf.test.is_gpu_available() # True/False
+
+    # Or only check for gpu's with cuda support
+    tf.test.is_gpu_available(cuda_only=True)
 
