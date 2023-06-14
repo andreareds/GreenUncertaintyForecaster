@@ -71,16 +71,16 @@ def main(args):
                             # TODO dont like this try except
                             try:
                                 train_model, prediction_quantiles = model.load_and_predict(ds.X_train,
-                                                                                                      ds.y_train,
-                                                                                                      ds.X_test,
-                                                                                                      ds.y_test,
-                                                                                                      p)
+                                                                                           ds.y_train,
+                                                                                           ds.X_test,
+                                                                                           ds.y_test,
+                                                                                           p)
                             except:
                                 train_model, _, prediction_quantiles, _, _ = model.training(ds.X_train,
-                                                                                                       ds.y_train,
-                                                                                                       ds.X_test,
-                                                                                                       ds.y_test,
-                                                                                                       p)
+                                                                                            ds.y_train,
+                                                                                            ds.X_test,
+                                                                                            ds.y_test,
+                                                                                            p)
                     else:
                         if args.tuning_hypers:
                             train_model, _, _ = model.training_talos(ds.X_train,
@@ -90,10 +90,10 @@ def main(args):
                                                                      p)
                         else:
                             train_model, _, prediction_quantiles, _, _ = model.training(ds.X_train,
-                                                                                                   ds.y_train,
-                                                                                                   ds.X_test,
-                                                                                                   ds.y_test,
-                                                                                                   p)
+                                                                                        ds.y_train,
+                                                                                        ds.X_test,
+                                                                                        ds.y_test,
+                                                                                        p)
 
                     train_quantiles = train_model(ds.X_train)
 
@@ -155,5 +155,5 @@ if __name__ == "__main__":
         help="Whether to perform hyperparams tuning with talos (1 yes, 0 no)"
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     main(parser.parse_args())
