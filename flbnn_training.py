@@ -8,7 +8,7 @@ from util import dataset, save_results
 import tensorflow as tf
 
 def main(args):
-    tf.config.experimental_run_functions_eagerly(True)
+    #tf.config.experimental_run_functions_eagerly(True)
     wins = [eval(i) for i in args.windows.split("-")]
     hs = [eval(i) for i in args.horizons.split("-")]
 
