@@ -277,6 +277,8 @@ class FLBNNPredictor(ModelInterface):
         # history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=self.ds.X_train.shape[0],
         #                                validation_split=0.2, verbose=2, callbacks=[es, save_check])
 
+        self.train_model.build(input_shape)
+
         history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=p['batch_size'],
                                        validation_split=0.2, verbose=2, callbacks=[es, save_check])
 
