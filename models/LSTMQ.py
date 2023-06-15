@@ -25,7 +25,7 @@ class LSTMQPredictor(ModelInterface):
                                'first_dense_dim': [16, 32, 64],
                                'first_dense_activation': ['relu'],
                                'batch_size': [256, 512, 1024],
-                               'epochs': [2000],
+                               'epochs': [4000],
                                'patience': [30],
                                'optimizer': ['adam'],
                                'lr': [1E-3, 1E-4, 1E-5],

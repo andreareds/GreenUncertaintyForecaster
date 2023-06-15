@@ -46,7 +46,7 @@ class FLBNNPredictor(ModelInterface):
                                'first_dense_dim': [16, 32, 64],
                                'first_dense_activation': [keras.activations.relu],
                                'batch_size': [256, 512, 1024],
-                               'epochs': [2000],
+                               'epochs': [3000],
                                'patience': [50],
                                'optimizer': ['adam'],
                                'lr': [1E-3, 1E-4, 1E-5],
