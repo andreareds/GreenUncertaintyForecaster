@@ -236,14 +236,21 @@ class FLBNNPredictor(ModelInterface):
         elif p['optimizer'] == 'sgd':
             opt = SGD(learning_rate=p['lr'], momentum=p['momentum'])
 
-        self.train_model.compile(loss=self.negative_loglikelihood,
+        # self.train_model.compile(loss=self.negative_loglikelihood,
+        #                          optimizer=opt,
+        #                          metrics=["mse", "mae"])
+
+        self.train_model.compile(loss='mse',
                                  optimizer=opt,
                                  metrics=["mse", "mae"])
 
         save_check = custom_keras.CustomSaveCheckpoint(self)
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=p['patience'])
 
-        history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=self.ds.X_train.shape[0],
+        # history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=self.ds.X_train.shape[0],
+        #                                validation_split=0.2, verbose=2, callbacks=[es, save_check])
+
+        history = self.train_model.fit(X_train, y_train, epochs=p['epochs'], batch_size=p['batch_size'],
                                        validation_split=0.2, verbose=2, callbacks=[es, save_check])
 
         self.model = save_check.dnn.model
@@ -251,7 +258,7 @@ class FLBNNPredictor(ModelInterface):
         return history, self.model
 
     def negative_loglikelihood(self, y_true, y_pred):
-        predictions = [self.train_model(self.ds.X_train) for i in range(2)]
+        predictions = [self.train_model(self.ds.X_train) for i in range(10)]
 
         y_pred_mean, y_pred_log_sigma = tf.math.reduce_mean(predictions, axis=0), \
             tf.math.reduce_std(predictions, axis=0)
