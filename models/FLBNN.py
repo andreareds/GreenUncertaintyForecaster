@@ -31,6 +31,7 @@ class VarLayer(tfp.layers.DenseVariational):
         return super(VarLayer, self).call(inputs)
 
 
+@tf.keras.utils.register_keras_serializable()
 class VarCNNLayer(tfp.layers.Convolution1DReparameterization):
     def __init__(self, name, filters, kernel_size, strides, padding, activation, **kwargs):
         super().__init__(filters=filters, kernel_size=kernel_size, strides=strides, name=name,
@@ -228,12 +229,12 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         x = VarCNNLayer('varcnn',
-            p['first_lstm_dim'],
-            p['first_conv_kernel'],
-            1,
-            "valid",
-            p['first_conv_activation'],
-        )(input_tensor)
+                        p['first_lstm_dim'],
+                        p['first_conv_kernel'],
+                        1,
+                        "valid",
+                        p['first_conv_activation'],
+                        )(input_tensor)
 
         # LSTM
         x = LSTM(p['first_lstm_dim'])(x)
