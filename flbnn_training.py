@@ -9,7 +9,6 @@ import tensorflow as tf
 
 def main(args):
     #tf.config.experimental_run_functions_eagerly(True)
-    tf.compat.v1.disable_eager_execution()
     wins = [eval(i) for i in args.windows.split("-")]
     hs = [eval(i) for i in args.horizons.split("-")]
 
@@ -24,6 +23,8 @@ def main(args):
                                          resource=res)
                     ds.dataset_creation()
                     ds.data_summary()
+
+                    tf.compat.v1.disable_eager_execution()
 
                     files = []
                     p = None
