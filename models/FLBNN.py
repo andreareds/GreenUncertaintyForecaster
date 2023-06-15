@@ -31,6 +31,23 @@ class VarLayer(tfp.layers.DenseVariational):
         return super(VarLayer, self).call(inputs)
 
 
+class VarCNNLayer(tfp.layers.Convolution1DReparameterization):
+    def __init__(self, name, filters, kernel_size, strides, padding, activation, **kwargs):
+        super().__init__(filters=filters, kernel_size=kernel_size, strides=strides, name=name,
+                         padding=padding, activation=activation, **kwargs)
+
+    def get_config(self):
+        config = super(VarCNNLayer, self).get_config()
+        config.update({
+            'name': self.name,
+            'filters': self.filters,
+            'activation': self.activation})
+        return config
+
+    def call(self, inputs):
+        return super(VarCNNLayer, self).call(inputs)
+
+
 class FLBNNPredictor(ModelInterface):
     def __init__(self):
         ModelInterface.__init__(self, "FLBNNPredictor")
@@ -125,7 +142,7 @@ class FLBNNPredictor(ModelInterface):
 
         return self.model, history, tuning_time
 
-    def training_talos(self, X_train, y_train,  X_test, y_test, p):
+    def training_talos(self, X_train, y_train, X_test, y_test, p):
         tf.keras.backend.clear_session()
         self.input_shape = X_train.shape[1:]
 
@@ -201,7 +218,16 @@ class FLBNNPredictor(ModelInterface):
         input_tensor = Input(shape=input_shape)
 
         # Bayesian 1DCNN
-        x = tfp.layers.Convolution1DReparameterization(
+        # x = tfp.layers.Convolution1DReparameterization(
+        #     filters=p['first_lstm_dim'],
+        #     kernel_size=p['first_conv_kernel'],
+        #     strides=1,
+        #     padding="valid",
+        #     activation=p['first_conv_activation'],
+        # )(input_tensor)
+
+        # Bayesian 1DCNN
+        x = VarCNNLayer(
             filters=p['first_lstm_dim'],
             kernel_size=p['first_conv_kernel'],
             strides=1,
@@ -261,7 +287,7 @@ class FLBNNPredictor(ModelInterface):
         predictions = [self.train_model(self.ds.X_train) for i in range(10)]
 
         y_pred_mean, y_pred_log_sigma = tf.math.reduce_mean(predictions, axis=0), \
-            tf.math.reduce_std(predictions, axis=0)
+                                        tf.math.reduce_std(predictions, axis=0)
 
         # Calculate the negative log likelihood
         loss = 0.5 * K.log(2 * np.pi) + y_pred_log_sigma + 0.5 * \
@@ -295,11 +321,11 @@ class FLBNNPredictor(ModelInterface):
         return posterior_model
 
     def build_batches(self, batch_size):
-        for i in range(0, int(len(self.ds.X_train)/batch_size), batch_size):
-            if i+batch_size > len(self.ds.X_train):
+        for i in range(0, int(len(self.ds.X_train) / batch_size), batch_size):
+            if i + batch_size > len(self.ds.X_train):
                 j = len(self.ds.X_train)
             else:
-                j = i+batch_size
+                j = i + batch_size
             self.X_batches[i] = self.ds.X_train[i:j]
             self.y_batches[i] = self.ds.y_train[i:j]
 
