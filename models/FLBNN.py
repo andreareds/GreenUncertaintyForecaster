@@ -227,12 +227,12 @@ class FLBNNPredictor(ModelInterface):
         # )(input_tensor)
 
         # Bayesian 1DCNN
-        x = VarCNNLayer(
-            filters=p['first_lstm_dim'],
-            kernel_size=p['first_conv_kernel'],
-            strides=1,
-            padding="valid",
-            activation=p['first_conv_activation'],
+        x = VarCNNLayer('varcnn',
+            p['first_lstm_dim'],
+            p['first_conv_kernel'],
+            1,
+            "valid",
+            p['first_conv_activation'],
         )(input_tensor)
 
         # LSTM
