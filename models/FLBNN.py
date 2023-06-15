@@ -240,7 +240,7 @@ class FLBNNPredictor(ModelInterface):
         #                          optimizer=opt,
         #                          metrics=["mse", "mae"])
 
-        self.train_model.compile(loss='mse',
+        self.train_model.compile(loss='mean_absolute_error',
                                  optimizer=opt,
                                  metrics=["mse", "mae"])
 
