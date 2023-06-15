@@ -7,7 +7,6 @@ from models import FLBNN
 from util import dataset, save_results
 import tensorflow as tf
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def main(args):
     #tf.config.experimental_run_functions_eagerly(True)
@@ -26,7 +25,7 @@ def main(args):
                     ds.dataset_creation()
                     ds.data_summary()
 
-                    # tf.compat.v1.disable_eager_execution()
+                    tf.compat.v1.disable_eager_execution()
 
                     files = []
                     p = None
@@ -156,7 +155,6 @@ if __name__ == "__main__":
         help="Whether to perform hyperparams tuning with talos (1 yes, 0 no)"
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     main(parser.parse_args())
     # imports are always needed
 
