@@ -269,6 +269,7 @@ class FLBNNPredictor(ModelInterface):
 
         self.train_model.compile(loss='mean_absolute_error',
                                  optimizer=opt,
+                                 run_eagerly=True,
                                  metrics=["mse", "mae"])
 
         save_check = custom_keras.CustomSaveCheckpoint(self)
