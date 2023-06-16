@@ -35,7 +35,7 @@ class VarLayer(tfp.layers.DenseVariational):
 class VarCNNLayer(tfp.layers.Convolution1DReparameterization):
     def __init__(self, name, filters, kernel_size, strides, padding, activation, **kwargs):
         super().__init__(filters=filters, kernel_size=kernel_size, strides=strides, name=name,
-                         padding=padding, activation=activation, **kwargs)
+                         padding=padding, activation=activation, kernel_divergence_fn=None, **kwargs)
 
     def get_config(self):
         config = super(VarCNNLayer, self).get_config()
@@ -169,7 +169,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         x = tfp.layers.Convolution1DReparameterization(
-            filters=p['first_lstm_dim'],
+            filters=p['first_conv_dim'],
             kernel_size=p['first_conv_kernel'],
             strides=1,
             padding="valid",
@@ -220,7 +220,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         # x = tfp.layers.Convolution1DReparameterization(
-        #     filters=p['first_lstm_dim'],
+        #     filters=p['first_conv_dim'],
         #     kernel_size=p['first_conv_kernel'],
         #     strides=1,
         #     padding="valid",
@@ -229,7 +229,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         x = VarCNNLayer('varcnn',
-                        p['first_lstm_dim'],
+                        p['first_conv_dim'],
                         p['first_conv_kernel'],
                         1,
                         "valid",
@@ -269,6 +269,7 @@ class FLBNNPredictor(ModelInterface):
 
         self.train_model.compile(loss='mean_absolute_error',
                                  optimizer=opt,
+                                 #run_eagerly=True,
                                  metrics=["mse", "mae"])
 
         save_check = custom_keras.CustomSaveCheckpoint(self)
