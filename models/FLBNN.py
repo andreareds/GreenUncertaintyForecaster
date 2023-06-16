@@ -35,7 +35,7 @@ class VarLayer(tfp.layers.DenseVariational):
 class VarCNNLayer(tfp.layers.Convolution1DReparameterization):
     def __init__(self, name, filters, kernel_size, strides, padding, activation, **kwargs):
         super().__init__(filters=filters, kernel_size=kernel_size, strides=strides, name=name,
-                         padding=padding, activation=activation, **kwargs)
+                         padding=padding, activation=activation, kernel_divergence_fn=None, **kwargs)
 
     def get_config(self):
         config = super(VarCNNLayer, self).get_config()
