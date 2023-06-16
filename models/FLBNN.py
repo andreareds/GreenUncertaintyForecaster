@@ -169,7 +169,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         x = tfp.layers.Convolution1DReparameterization(
-            filters=p['first_lstm_dim'],
+            filters=p['first_conv_dim'],
             kernel_size=p['first_conv_kernel'],
             strides=1,
             padding="valid",
@@ -220,7 +220,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         # x = tfp.layers.Convolution1DReparameterization(
-        #     filters=p['first_lstm_dim'],
+        #     filters=p['first_conv_dim'],
         #     kernel_size=p['first_conv_kernel'],
         #     strides=1,
         #     padding="valid",
@@ -229,7 +229,7 @@ class FLBNNPredictor(ModelInterface):
 
         # Bayesian 1DCNN
         x = VarCNNLayer('varcnn',
-                        p['first_lstm_dim'],
+                        p['first_conv_dim'],
                         p['first_conv_kernel'],
                         1,
                         "valid",
