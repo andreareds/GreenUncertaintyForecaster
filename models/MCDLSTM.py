@@ -36,7 +36,7 @@ class MCDLSTMPredictor(ModelInterface):
         prediction = []
         for i in range(iterations):
             prediction.append(self.model(X_test))
-
+        print(len(prediction), prediction[0].shape)
         return np.mean(prediction), np.std(prediction)
 
     def training(self, X_train, y_train, X_test, y_test, p):
