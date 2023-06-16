@@ -25,7 +25,7 @@ def main(args):
                     ds.dataset_creation()
                     ds.data_summary()
 
-                    tf.compat.v1.disable_eager_execution()
+                    # tf.compat.v1.disable_eager_execution()
 
                     files = []
                     p = None
