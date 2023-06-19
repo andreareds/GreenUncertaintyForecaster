@@ -2,7 +2,6 @@ from util import dataset, save_results
 import numpy as np
 from models import LSTMQ
 import pandas as pd
-import os
 import argparse
 import glob
 
@@ -43,18 +42,15 @@ def main(args):
                         p = {'first_conv_dim': parameters['first_conv_dim'],
                              'first_conv_kernel': (parameters['first_conv_kernel'],),
                              'first_conv_activation': parameters['first_conv_activation'],
-                             'first_lstm_dim': parameters['first_lstm_dim'],
+                             'second_lstm_dim': parameters['second_lstm_dim'],
                              'first_dense_dim': parameters['first_dense_dim'],
                              'first_dense_activation': dense_act,
                              'batch_size': parameters['batch_size'],
                              'epochs': parameters['epochs'],
                              'patience': parameters['patience'],
                              'optimizer': parameters['optimizer'],
-                             'batch_normalization': True,
                              'lr': parameters['lr'],
-                             'momentum': parameters['momentum'],
                              'decay': parameters['decay'],
-                             'pred_steps': 0,
                              }
 
                     print("RESOURCE:", res, "CLUSTER:", c, "HORIZON:", h, "WIN:", win)
