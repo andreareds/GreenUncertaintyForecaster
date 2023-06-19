@@ -1,0 +1,2 @@
+round_epochs,loss,mse,mae,quantile_loss,val_loss,val_mse,val_mae,val_quantile_loss,batch_size,decay,epochs,first_conv_activation,first_conv_dim,first_conv_kernel,first_dense_activation,first_dense_dim,lr,optimizer,patience,second_lstm_dim
+408,0.003254668787122,0.002658358076587,0.044502280652523,0.003254668787122,0.002877422841266,0.002063751453534,0.038218788802624,0.002877422841266,256,0.001,2000,relu,64,12,relu,32,0.001,adam,30,32

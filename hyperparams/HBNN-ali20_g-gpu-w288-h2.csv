@@ -1,2 +1,2 @@
 round_epochs,loss,mse,mae,val_loss,val_mse,val_mae,batch_size,decay,epochs,first_conv_activation,first_conv_dim,first_conv_kernel,first_dense_activation,first_dense_dim,lr,optimizer,patience,second_lstm_dim
-284,-0.320040702819824,0.076126351952553,0.214488878846168,-0.169222742319107,0.073299609124661,0.211089298129082,256,0.001,2000,relu,32,9,<function relu at 0x7ff6e6051440>,16,0.001,adam,30,16
+284,-0.320040702819824,0.076126351952553,0.214488878846168,-0.169222742319107,0.073299609124661,0.211089298129082,256,0.0001,2000,relu,32,5,<function relu at 0x7ff6e6051440>,16,0.001,adam,30,32
