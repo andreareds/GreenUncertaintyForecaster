@@ -91,7 +91,8 @@ def main(args):
                     train_std = np.concatenate(train_distribution.stddev().numpy(), axis=0)
 
                     save_results.save_uncertainty_csv(args.projectpath,
-                                                      train_mean, train_std,
+                                                      train_mean,
+                                                      train_std,
                                                       np.concatenate(ds.y_train, axis=0),
                                                       'avg' + res,
                                                       'train-' + model.name)

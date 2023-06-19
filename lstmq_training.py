@@ -94,14 +94,16 @@ def main(args):
                     train_quantiles = train_model(ds.X_train)
 
                     save_results.save_uncertainty_csv(args.projectpath,
-                                                      train_quantiles,
+                                                      np.concatenate(train_quantiles, axis=0),
+                                                      [0 for i in range(len(train_quantiles))],
                                                       np.concatenate(ds.y_train, axis=0),
                                                       'avg' + res,
                                                       'train-' + model.name)
 
                     save_results.save_uncertainty_csv(args.projectpath,
-                                                      prediction_quantiles,
-                                                      np.concatenate(ds.y_test[:len(prediction_mean)], axis=0),
+                                                      np.concatenate(prediction_quantiles, axis=0),
+                                                      [0 for i in range(len(prediction_quantiles))],
+                                                      np.concatenate(ds.y_test[:len(prediction_quantiles)], axis=0),
                                                       'avg' + res,
                                                       model.name)
 
