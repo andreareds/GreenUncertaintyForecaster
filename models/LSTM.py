@@ -22,7 +22,7 @@ class LSTMPredictor(ModelInterface):
         self.parameter_list = {'first_conv_dim': [32, 64, 128],
                                'first_conv_kernel': [3, 5, 7, 11],
                                'first_conv_activation': ['relu', 'tanh'],
-                               'second_lstm_dim': [16, 32, 64],
+                               'first_lstm_dim': [16, 32, 64],
                                'first_dense_dim': [16, 32, 64],
                                'first_dense_activation': ['relu', 'elu', 'selu', 'tanh'],
                                'dense_kernel_init': ['he_normal', 'glorot_uniform'],
@@ -120,7 +120,7 @@ class LSTMPredictor(ModelInterface):
                                    strides=1, padding="causal",
                                    activation=p['first_conv_activation'],
                                    input_shape=input_shape),
-            tf.keras.layers.LSTM(p['second_lstm_dim']), 
+            tf.keras.layers.LSTM(p['first_lstm_dim']),
             tf.keras.layers.Dense(p['first_dense_dim'], activation=p['first_dense_activation']),
             tf.keras.layers.Dense(1),
         ])
@@ -149,7 +149,7 @@ class LSTMPredictor(ModelInterface):
                                    strides=1, padding="causal",
                                    activation=p['first_conv_activation'],
                                    input_shape=input_shape),
-            tf.keras.layers.LSTM(p['second_lstm_dim']),
+            tf.keras.layers.LSTM(p['first_lstm_dim']),
             tf.keras.layers.Dense(p['first_dense_dim'], activation=p['first_dense_activation']),
             tf.keras.layers.Dense(1),
         ])
