@@ -58,7 +58,7 @@ def run_scenario_2(args, results: dict):
         w_value = GPU_SPECS[gpu_name][1]
         n_g = GPU_SPECS[gpu_name][0]
         e_g = GPU_SPECS[gpu_name][2]
-        c_g = GPU_SPECS[gpu_name][2]*0.25
+        c_g = GPU_SPECS[gpu_name][2]*0.2
         g_name.extend([gpu_name for i in range(n_g)])
         w.extend([w_value for i in range(n_g)])
         e.extend([e_g for i in range(n_g)])
