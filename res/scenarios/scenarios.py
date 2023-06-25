@@ -86,7 +86,7 @@ def run_scenario_2(args, results: dict):
                           # "LSTM": results["LSTM"][f"ub_{args.qos_level}"].values,
                           }
 
-    print(f"{datetime.datetime.now()} -- BEGIN for QOS {args.qos_level}!")
+    print(f"{datetime.datetime.now()} -- SCENARIO {args.id_scenario} for QOS {args.qos_level}!")
     scenario_2_costs = {}
     for model in pred_workloads:
         demands = pred_workloads[model]
