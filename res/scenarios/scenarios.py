@@ -74,9 +74,9 @@ def run_scenario_2(args, results: dict):
 
     # load results
     if args.debug_mode:
-        pred_workloads = {"baseline_a": results["HBNN"]["true_norm_gpu"].values[:50]}
+        pred_workloads = {"baseline_a": results["HBNN"]["true_gpu"].values[:50]}
     else:
-        pred_workloads = {"baseline_a": results["HBNN"]["true_norm_gpu"].values,
+        pred_workloads = {"baseline_a": results["HBNN"]["true_gpu"].values,
                           "baseline_b": [41817367.1357113
                                          for i in range(len(results["HBNN"]))],  # max possible workload
                           "HBNN": results["HBNN"][f"ub_{args.qos_level}"].values,
