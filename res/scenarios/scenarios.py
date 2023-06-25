@@ -3,10 +3,15 @@ import pandas as pd
 import datetime
 import numpy as np
 
-GPU_SPECS = {"P100": (1596, 0.000404575892857, 0.0208),
-             "T4": (994, 0.00056640625, 0.0058),
-             "V100": (1912, 0.000283203125, 0.0233),
-             "MISC": (2240, 0.000361596009975, 0.0208),
+# GPU_SPECS = {"P100": (1596, 0.000404575892857, 0.0208),
+#              "T4": (994, 0.00056640625, 0.0058),
+#              "V100": (1912, 0.000283203125, 0.0233),
+#              "MISC": (2240, 0.000361596009975, 0.0208),
+#              }
+GPU_SPECS = {"P100": (1596, 11667.7921695623, 0.0208),
+             "T4": (994, 16334.9090373872, 0.0058),
+             "V100": (1912, 8167.45451869361, 0.0233),
+             "MISC": (2240, 10428.2711061624, 0.0208),
              }
 
 
@@ -21,7 +26,7 @@ def load_results(folder: str) -> dict:
 
 
 def allocate_resources_2(w_demand: float,
-                         df_stat: pd.DataFrame
+                         df_stat: pd.DataFrame,
                          ) -> float:
     df_allocation = df_stat.copy()
     wd_rem = w_demand
@@ -72,15 +77,16 @@ def run_scenario_2(args, results: dict):
         pred_workloads = {"baseline_a": results["HBNN"]["true_norm_gpu"].values[:50]}
     else:
         pred_workloads = {"baseline_a": results["HBNN"]["true_norm_gpu"].values,
-                          "baseline_b": [1.45 for i in range(len(results["HBNN"]))],  # max possible workload
-                          "HBNN": results["HBNN"]["ub_95"].values,
-                          "MCD": results["MCD"]["ub_95"].values,
-                          "HBNN++": results["HBNN++"]["ub_95"].values,
-                          "LSTMQ": results["LSTMQ"]["ub_95"].values,
-                          "LSTM": results["LSTM"]["ub_95"].values,
+                          "baseline_b": [41817367.1357113
+                                         for i in range(len(results["HBNN"]))],  # max possible workload
+                          "HBNN": results["HBNN"][f"ub_{args.qos_level}"].values,
+                          "MCD": results["MCD"][f"ub_{args.qos_level}"].values,
+                          "HBNN++": results["HBNN++"][f"ub_{args.qos_level}"].values,
+                          "LSTMQ": results["LSTMQ"][f"ub_{args.qos_level}"].values,
+                          # "LSTM": results["LSTM"][f"ub_{args.qos_level}"].values,
                           }
 
-    print(f"{datetime.datetime.now()} -- BEGIN!")
+    print(f"{datetime.datetime.now()} -- BEGIN for QOS {args.qos_level}!")
     scenario_2_costs = {}
     for model in pred_workloads:
         demands = pred_workloads[model]
@@ -122,6 +128,13 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="The path to the dataset"
+    )
+    parser.add_argument(
+        "--qos_level",
+        default=False,
+        type=str,
+        required=True,
+        help="The qos level"
     )
     parser.add_argument(
         "--debug_mode",
