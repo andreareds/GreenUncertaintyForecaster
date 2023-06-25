@@ -8,10 +8,10 @@ import numpy as np
 #              "V100": (1912, 0.000283203125, 0.0233),
 #              "MISC": (2240, 0.000361596009975, 0.0208),
 #              }
-GPU_SPECS = {"P100": (1596, 11667.7921695623, 0.0208),
-             "T4": (994, 16334.9090373872, 0.0058),
-             "V100": (1912, 8167.45451869361, 0.0233),
-             "MISC": (2240, 10428.2711061624, 0.0208),
+GPU_SPECS = {"P100": (1596, 5821.61047808277, 0.0208),
+             "T4": (994, 4158.29319863055, 0.0058),
+             "V100": (1912, 8316.5863972611, 0.0233),
+             "MISC": (2240, 6513.57645566739, 0.0208),
              }
 
 
@@ -77,7 +77,7 @@ def run_scenario_2(args, results: dict):
         pred_workloads = {"baseline_a": results["HBNN"]["true_gpu"].values[:50]}
     else:
         pred_workloads = {"baseline_a": results["HBNN"]["true_gpu"].values,
-                          "baseline_b": [41817367.1357113
+                          "baseline_b": [43916358.2147171
                                          for i in range(len(results["HBNN"]))],  # max possible workload
                           "HBNN": results["HBNN"][f"ub_{args.qos_level}"].values,
                           "MCD": results["MCD"][f"ub_{args.qos_level}"].values,
