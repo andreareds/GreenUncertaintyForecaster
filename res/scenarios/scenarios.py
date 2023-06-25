@@ -63,7 +63,7 @@ def run_scenario_2(args, results: dict):
         w.extend([w_value for i in range(n_g)])
         e.extend([e_g for i in range(n_g)])
         c.extend([c_g for i in range(n_g)])
-        s.extend([0 for i in range(n_g)])
+        s.extend([1 for i in range(n_g)])
     d = {"gpu_name": g_name, 'w': w, 'e': e, 'c': c, 's': s}
     df_gpus_status = pd.DataFrame(data=d)
 
