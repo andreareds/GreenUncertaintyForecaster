@@ -30,20 +30,6 @@ We propose an evaluation framework to assess the impact of uncertainty-aware pre
 * **time**: contains measurements of the time for training, fine-tuning and inference phases.
 * **util**: contains useful methods for initialising the datasets, plotting and saving the results.
 
-## Statistical Methods
-
-#### Train ARIMA
-
-```bash
-python arima_training.py
-```
-
-#### Train GARCH
-
-```bash
-python garch_training.py
-```
-
 ## Deep Learning Methods
 
 #### Train LSTM
@@ -58,9 +44,20 @@ python lstm_training.py
 python hbnn_training.py
 ```
 
-#### Train LSTMD
+#### Train HBNN++
 
 ```bash
-python lstmd_training.py
+python flbnn_training.py
 ```
 
+#### Train LSTM-Q
+
+```bash
+python lstmq_training.py
+```
+
+#### Train MCD-LSTM
+
+```bash
+python mcdlstm_training.py
+```
