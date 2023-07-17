@@ -1,11 +1,13 @@
-# Bayesian Uncertainty Modelling for Cloud Workload Prediction
+# Performance and Energy Savings Trade-Off with Uncertainty-Aware Cloud Workload Forecasting
 
-## Introduction
+## Abstract
 
-Providers of cloud computing systems need to allocate resources carefully in order to (i) meet the desired Quality of Service, and (ii) reduce waste due to overallocation. To allocate resources to service requests without excessive delays, we need to predict future demand. Current state-of-the-art methods such as Long Short-Term Memory-based (LSTM) models make only point predictions of demand and ignore uncertainty. Predicting a distribution would provide a more complete picture and inform resource scheduling decisions. We investigate DL models to predict workload distribution, and evaluate it on the Time Series forecasting of CPU and memory workload of 8 clusters in the Google Cloud data centre. Experiments show that the proposed models have a similar point forecast accuracy to the LSTM. However, they can provide better estimations of resource usage bounds, allowing a reduction of both overprediction and total predicted resources, maintaining good runtime performance.
+Cloud managers typically leverage future workload predictions to make informed decisions on resource allocation, where the ultimate goal of the allocation is to meet customers' demands while reducing the provisioning cost. Among several workload forecasting approaches proposed in the literature, uncertainty-aware time series analysis solutions are desirable in cloud scenarios because they can predict the distribution of future demand and provide bounds associated with a given service level set by the resource manager. The effectiveness of uncertainty-based workload predictions is normally assessed in terms of accuracy metrics (e.g.\ MAE) and service level (e.g.\ Success Rate), but the effect on the resource provisioning cost is under-investigated. 
+
+
+We propose an evaluation framework to assess the impact of uncertainty-aware predictions on the performance vs cost trade-off, where we express the cost in terms of energy savings. We illustrate the framework's effectiveness by simulating two real-world cloud scenarios where an optimizer leverages workload predictions to allocate resources to satisfy a desired service level while minimizing energy waste. Offline experiments compare representative uncertainty-aware models and a new model (HBNN++) that we propose, which predict a cluster trace's GPU demand. We show that more effective uncertainty modelling can save energy without violating desired service level targets and that model performance varies depending on the specific details of the allocation scheme, server and GPU energy costs.
 
 ## Python Dependencies
-* arch                      5.1.0
 * keras                     2.8.0
 * matplotlib                3.3.4
 * numpy                     1.21.5
